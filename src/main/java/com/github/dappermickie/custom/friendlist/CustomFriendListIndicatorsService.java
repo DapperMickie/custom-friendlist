@@ -80,7 +80,7 @@ class CustomFriendListIndicatorsService
 			(hs == CustomFriendListConfig.HighlightSetting.PVP && (client.getVarbitValue(Varbits.IN_WILDERNESS) == 1 || client.getVarbitValue(Varbits.PVP_SPEC_ORB) == 1));
 
 		Color color = null;
-		if (isEnabled.test(config.highlightFriendsChat()) && plugin.isPlayerInList(player.getName()))
+		if (isEnabled.test(config.highlightFriendsChat()) && plugin.isPlayerInList(player.getName()) && plugin.isPlayerInList(client.getLocalPlayer().getName()))
 		{
 			color = config.getFriendsChatMemberColor();
 		}

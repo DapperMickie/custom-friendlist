@@ -6,19 +6,9 @@ import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 import net.runelite.client.config.ConfigSection;
 
-@ConfigGroup("customfriendlist")
+@ConfigGroup("odablockdmmfinale")
 public interface CustomFriendListConfig extends Config
 {
-	@ConfigItem(
-		position = 1,
-		keyName = "customFriendList",
-		name = "Custom friend list",
-		description = "Input all the names (1 per line) here."
-	)
-	default String customFriendlist()
-	{
-		return "";
-	}
 
 	@ConfigItem(
 		position = 2,
