@@ -82,6 +82,9 @@ public class CustomFriendListPlugin extends Plugin
 	@Inject
 	private CustomFriendListIndicatorsService playerIndicatorsService;
 
+	@Inject
+	private ClientThread clientThread;
+
 	private static final String TRADING_WITH_TEXT = "Trading with: ";
 
 	private boolean isDmmWorld = false;
