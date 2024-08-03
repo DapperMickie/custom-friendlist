@@ -571,7 +571,7 @@ public class CustomFriendListPlugin extends Plugin
 		overlayManager.remove(playerIndicatorsTileOverlay);
 		overlayManager.remove(playerIndicatorsMinimapOverlay);
 
-		if (isPlayerInList(client.getLocalPlayer().getName()))
+		if (isDmmWorld && isPlayerInList(client.getLocalPlayer().getName()))
 		{
 			// Entity hider
 			updateConfig();
