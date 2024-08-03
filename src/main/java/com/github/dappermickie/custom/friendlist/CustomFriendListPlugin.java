@@ -556,8 +556,6 @@ public class CustomFriendListPlugin extends Plugin
 		overlayManager.remove(playerIndicatorsMinimapOverlay);
 	}
 
-	private boolean hasBeenAdded = false;
-
 	private void updateOverlays()
 	{
 		isDmmWorld = (client.getWorldType().contains(WorldType.SEASONAL) || client.getWorldType().contains(WorldType.TOURNAMENT_WORLD))
