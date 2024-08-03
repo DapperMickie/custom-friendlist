@@ -543,7 +543,6 @@ public class CustomFriendListPlugin extends Plugin
 		"VI0LENT",
 		"WE T0DD DID",
 		"WildBaws",
-		"wokingham g",
 		"Zee Kevin"
 	};
 
