@@ -2,7 +2,7 @@ package com.github.dappermickie.custom.friendlist;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Provides;
-import java.util.Arrays;
+import java.util.Set;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
@@ -27,6 +27,7 @@ import net.runelite.api.ScriptID;
 import net.runelite.api.WorldType;
 import net.runelite.api.events.ClientTick;
 import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ScriptPostFired;
 import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.Widget;
@@ -89,7 +90,7 @@ public class CustomFriendListPlugin extends Plugin
 
 	private boolean isDmmWorld = false;
 
-	String[] playerList = new String[]{
+	private static final Set<String> playerList = Set.of(
 		"7 of october",
 		"Ai Odablock",
 		"aRushaholic",
@@ -134,7 +135,6 @@ public class CustomFriendListPlugin extends Plugin
 		"450lbs fatso",
 		"45 Def Tyler",
 		"4bop",
-		"6 hrs",
 		"6Platinum9",
 		"70EASTWEST",
 		"73 Diesel",
@@ -464,7 +464,6 @@ public class CustomFriendListPlugin extends Plugin
 		"Whizalicious",
 		"Wienterr",
 		"wienterrr",
-		"WildBaws",
 		"WlIW",
 		"wocktris",
 		"wokingham g",
@@ -480,7 +479,6 @@ public class CustomFriendListPlugin extends Plugin
 		"Yh Shuhua",
 		"YSG PURE DMM",
 		"Zaleerion",
-		"Zee Kevin",
 		"Zephyrind",
 		"Zhats Zrazy",
 		"ZIGACHAD",
@@ -493,8 +491,6 @@ public class CustomFriendListPlugin extends Plugin
 		"Alexvndre",
 		"ALMOST11HP",
 		"Altarism",
-		"Astr00",
-		"Avatar Zuko",
 		"Best Pker",
 		"Bk 2 Lumb M8",
 		"buddy pieces",
@@ -506,11 +502,8 @@ public class CustomFriendListPlugin extends Plugin
 		"DMM Worker99",
 		"Doobes",
 		"Dude I Rush",
-		"Edhanjo",
-		"eJuice",
 		"H I C H E W",
 		"Ha yden",
-		"Hatto Jr",
 		"Hcscrewup2",
 		"heckin pure",
 		"HEPATlTlS B",
@@ -520,31 +513,24 @@ public class CustomFriendListPlugin extends Plugin
 		"LANAFROMWISH",
 		"LegendSmokes",
 		"lithpytommy",
-		"lSRAHELL",
 		"Mashuugs",
 		"Nvr Ironman",
 		"Ojibuh",
 		"pc7",
-		"pot z",
 		"RobPandaDMM",
 		"rolll",
-		"ROofDmm",
-		"Salted Slug",
-		"splity0wig",
 		"sumer",
 		"TaintPainta",
 		"tank3d oxy",
 		"TBNRflamingo",
-		"The 99 Pure",
 		"The On3",
 		"Thirty5 Euro",
 		"TL9daysLate",
-		"tokinieks121",
 		"VI0LENT",
 		"WE T0DD DID",
 		"WildBaws",
-		"Zee Kevin"
-	};
+		"Zee Kevin",
+		"Haram Lord");
 
 	@Override
 	protected void startUp()
@@ -552,12 +538,10 @@ public class CustomFriendListPlugin extends Plugin
 		// Entity hider
 		updateConfig();
 
-		hooks.registerRenderableDrawListener(drawListener);
-
-		// Player indicator
-		overlayManager.add(playerIndicatorsOverlay);
-		overlayManager.add(playerIndicatorsTileOverlay);
-		overlayManager.add(playerIndicatorsMinimapOverlay);
+		if (client.getGameState().equals(GameState.LOGGED_IN))
+		{
+			updateRequestTick = client.getTickCount();
+		}
 	}
 
 	@Override
@@ -572,9 +556,22 @@ public class CustomFriendListPlugin extends Plugin
 		overlayManager.remove(playerIndicatorsMinimapOverlay);
 	}
 
+	private boolean hasBeenAdded = false;
+
 	private void updateOverlays()
 	{
-		if (isDmmWorld && isPlayerInList(client.getLocalPlayer().getName()))
+		isDmmWorld = (client.getWorldType().contains(WorldType.SEASONAL) || client.getWorldType().contains(WorldType.TOURNAMENT_WORLD))
+			&& client.getWorldType().contains(WorldType.DEADMAN);
+
+		// Entity Hider
+		hooks.unregisterRenderableDrawListener(drawListener);
+
+		// Player indicator
+		overlayManager.remove(playerIndicatorsOverlay);
+		overlayManager.remove(playerIndicatorsTileOverlay);
+		overlayManager.remove(playerIndicatorsMinimapOverlay);
+
+		if (isPlayerInList(client.getLocalPlayer().getName()))
 		{
 			// Entity hider
 			updateConfig();
@@ -586,16 +583,6 @@ public class CustomFriendListPlugin extends Plugin
 			overlayManager.add(playerIndicatorsTileOverlay);
 			overlayManager.add(playerIndicatorsMinimapOverlay);
 		}
-		else
-		{
-			// Entity Hider
-			hooks.unregisterRenderableDrawListener(drawListener);
-
-			// Player indicator
-			overlayManager.remove(playerIndicatorsOverlay);
-			overlayManager.remove(playerIndicatorsTileOverlay);
-			overlayManager.remove(playerIndicatorsMinimapOverlay);
-		}
 	}
 
 	@Subscribe
@@ -603,9 +590,7 @@ public class CustomFriendListPlugin extends Plugin
 	{
 		if (event.getGameState() == GameState.LOGGED_IN)
 		{
-			isDmmWorld = (client.getWorldType().contains(WorldType.SEASONAL) || client.getWorldType().contains(WorldType.TOURNAMENT_WORLD))
-				&& client.getWorldType().contains(WorldType.DEADMAN);
-			updateOverlays();
+			updateRequestTick = client.getTickCount();
 		}
 	}
 
@@ -646,6 +631,23 @@ public class CustomFriendListPlugin extends Plugin
 
 		return true;
 	}
+
+	@Subscribe
+	public void onGameTick(GameTick gameTick)
+	{
+		if (client.getTickCount() <= 0 || updateRequestTick == -1)
+		{
+			return;
+		}
+
+		if (client.getTickCount() > updateRequestTick + 2)
+		{
+			updateOverlays();
+			updateRequestTick = -1;
+		}
+	}
+
+	private int updateRequestTick = -1;
 
 	@Subscribe
 	public void onClientTick(ClientTick clientTick)
@@ -764,7 +766,11 @@ public class CustomFriendListPlugin extends Plugin
 
 	public boolean isPlayerInList(String name)
 	{
-		return Arrays.stream(playerList).anyMatch(x -> x.split(" - ")[0].equals(name));
+		if (name == null)
+		{
+			return false;
+		}
+		return playerList.contains(name);
 	}
 
 	private Player findPlayer(String name)
@@ -782,7 +788,7 @@ public class CustomFriendListPlugin extends Plugin
 	@Subscribe
 	public void onConfigChanged(ConfigChanged e)
 	{
-		if (e.getGroup().equals("customfriendlist"))
+		if (e.getGroup().equals("odablockdmmfinale"))
 		{
 			updateConfig();
 		}
